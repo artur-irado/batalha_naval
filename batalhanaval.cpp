@@ -2,14 +2,83 @@
 #include <ctime>
 #include <cstdlib>
 using namespace std;
+
+//Variaveis Globais
+
+const int MAX_TABULEIRO = 10;
+int ataque_linha; //coordenada que voce insire pra atacar (linha, a..b...c) em forma de inteiro
+int ataque_coluna; //coordenada que voce insire atacar (coluna)
+int comprimento[3] = {2,3,4}; // diferentes comprimentos armazenados
+int direcao; //variavel 1 para horizontal e 0 para vertical 
+int linha, coluna; //variaveis para determinar a linha e coluna em que o navio gerado aleatoriamente vai ser posicionado
+int numero_navios = 0, tipo, contagem;
+int tamanho_tabuleiro = 1;
+char alfabeto[10] = {'A','B','C','D','E','F','G','H','I','J'};
+char ataque_linha_char; //coordenada que voce insire pra atacar (linha, a..b...c) em forma de char
+char char_do_navio[3] = {'D', 'C', 'P'};
+char tabuleiro_ataque[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
+char tabuleiro_nosso[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'}; // tabuleiro char, '~' representa as ondinhas
+bool posicao_valida = true; //variavel pra reinicar o ciclo de posicionamento de navios se a posiçao não for válida
+string nome_do_navio[3] = {"Destroier", "Cruzador", "Porta-Aviao"};
+
+void gerar_tabuleiro(){
+    cout << endl;
+    for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
+        for (int j=0; j < tamanho_tabuleiro; j++){
+            tabuleiro_nosso[i][j] = '~';
+        }
+    }
+
+}
+
+
+
+void gerar_tabuleiro_ataque(){
+    cout << endl;
+    for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
+    for (int j=0; j < tamanho_tabuleiro; j++){
+        tabuleiro_ataque[i][j] = '~';
+        }
+    }
+
+}
+
+void imprimir_tabuleiros(){
+
+    cout << "  "; 
+    for(int j = 0; j < tamanho_tabuleiro; j++){ //imprime os numeros encima do tabuleiro
+        cout << j << " ";
+    }
+    cout << "\t\t";
+    cout << "  ";
+    for(int j = 0; j < tamanho_tabuleiro; j++){ //imprime os numeros encima do tabuleiro
+        cout << j << " ";
+    }
+    cout << endl;
+    
+    for(int i = 0; i < tamanho_tabuleiro; i++){   // Imprime a Matriz do tabuleiro
+        cout << alfabeto[i] << " "; //imprime as letras do lado do tabuleiro
+        for (int j=0; j < tamanho_tabuleiro; j++){
+            cout << tabuleiro_nosso[i][j] << " ";
+        }
+        cout << "\t\t"; 
+        cout << alfabeto[i] << " "; //imprime as letras do lado do tabuleiro
+        for (int j=0; j < tamanho_tabuleiro; j++){
+            cout << tabuleiro_ataque[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl << "Digite as cordenadas de ataque: ";
+    cin >> ataque_linha_char >> ataque_coluna;
+}
+
+void seu_ataque(){
+    ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
+    
+}
+
 int main(){
     srand(time(NULL));
-    int numero_navios = 0, tipo, contagem;
-    char alfabeto[10] = {'A','B','C','D','E','F','G','H','I','J'};
-    int tamanho_tabuleiro = 0;
-    char char_do_navio[3] = {'E', 'C', 'P'};
-    string nome_do_navio[3] = {"Encouracado", "Cruzador", "Porta-Aviao"};
-
     while(numero_navios < 1 || numero_navios > 5){
         cout << "Insira o numero de navios (max 5): ";
         cin >> numero_navios;
@@ -40,19 +109,7 @@ int main(){
         cout << navios[i] << " navios do tipo " << nome_do_navio[i] << endl; //informa quantos navios existem de cada tipo
     }
 
-    char tabuleiro_nosso[tamanho_tabuleiro][tamanho_tabuleiro] = {'~'}; // tabuleiro char, '~' representa as ondinhas
-    for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
-        cout << endl << endl;
-        for (int j=0; j < tamanho_tabuleiro; j++){
-            tabuleiro_nosso[i][j] = '~';
-        }
-    }
-
-    int comprimento[3] = {2,3,4}; // diferentes comprimentos armazenados
-    bool posicao_valida = true; //variavel pra reinicar o ciclo de posicionamento de navios se a posiçao não for válida
-    int direcao; //variavel 1 para horizontal e 0 para vertical 
-    int linha, coluna; //variaveis para determinar a linha e coluna em que o navio gerado aleatoriamente vai ser posicionado
-
+    gerar_tabuleiro();
 
     for(int j = 0; j < 3; j++){ //Como o comprimento dos vetores navios e comprimento são iguais, usa 3 como numero de repetição!
         while(navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
@@ -62,7 +119,7 @@ int main(){
                 linha = rand()% (tamanho_tabuleiro - comprimento[j] + 1); //escolhe a linha do navio
                 coluna = rand()% tamanho_tabuleiro; //escolhe a coluna do navio
                 for(int k = 0; k < comprimento[j]; k++){ 
-                    if(tabuleiro_nosso[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                    if(tabuleiro_nosso[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
                         posicao_valida = false; //se já tiver algo, não coloca nada
                     }
                 }
@@ -90,18 +147,12 @@ int main(){
             }
         }
     }
-
-    cout << "  "; 
-    for(int j = 0; j < tamanho_tabuleiro; j++){ //imprime os numeros encima do tabuleiro
-        cout << j << " ";
-    }
-    cout << endl;
-
-    for(int i = 0; i < tamanho_tabuleiro; i++){   // Imprime a Matriz do tabuleiro
-        cout << alfabeto[i] << " "; //imprime as letras do lado do tabuleiro
-            for (int j=0; j < tamanho_tabuleiro; j++){
-               cout << tabuleiro_nosso[i][j] << " ";
-            }
-        cout << endl;
-    }
+while (ataque_linha_char != 'X'){
+    cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
+    cout << "---------------------DIGITE X X PARA FECHAR --------------------" << endl;
+    gerar_tabuleiro_ataque();
+    imprimir_tabuleiros();
+    seu_ataque();
+    cout << "------------------------------------------------------------------------------------" << endl;
+}
 }
