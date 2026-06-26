@@ -6,6 +6,7 @@ using namespace std;
 //Variaveis Globais
 
 const int MAX_TABULEIRO = 10;
+int navios[3] = {0}; //3 tipos de navios, cada posição armazena o numero de navios de cada tipo
 int ataque_linha; //coordenada que voce insire pra atacar (linha, a..b...c) em forma de inteiro
 int ataque_coluna; //coordenada que voce insire atacar (coluna)
 int comprimento[3] = {2,3,4}; // diferentes comprimentos armazenados
@@ -74,22 +75,11 @@ void imprimir_tabuleiros(){
 
 void seu_ataque(){
     ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
-    
+    tabuleiro_ataque[ataque_linha][ataque_coluna] = 'X';
+
 }
 
-int main(){
-    srand(time(NULL));
-    while(numero_navios < 1 || numero_navios > 5){
-        cout << "Insira o numero de navios (max 5): ";
-        cin >> numero_navios;
-    }
-
-    while(tamanho_tabuleiro < 6 || tamanho_tabuleiro > 10){
-        cout << "Insira o tamanho do tabuleiro (min 6 e max 10): ";
-        cin >> tamanho_tabuleiro;
-    }
-
-    int navios[3] = {0}; //3 tipos de navios, cada posição armazena o numero de navios de cada tipo
+void tipos_de_navio(){
     for(int i=0; i<numero_navios; i++){
         tipo = rand()% 3; // variavel tipo para gerar o número aleatorio usado no switch
         switch(tipo) {
@@ -104,13 +94,14 @@ int main(){
                 break;
         }
     }
-
+    
     for (int i=0; i < 3; i++){
         cout << navios[i] << " navios do tipo " << nome_do_navio[i] << endl; //informa quantos navios existem de cada tipo
     }
 
-    gerar_tabuleiro();
+}
 
+void escolher_posicoes_nosso(){
     for(int j = 0; j < 3; j++){ //Como o comprimento dos vetores navios e comprimento são iguais, usa 3 como numero de repetição!
         while(navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
             posicao_valida = true; //precisa disso senao o codigo não funciona, sla nao sei explicar direito
@@ -147,12 +138,74 @@ int main(){
             }
         }
     }
-while (ataque_linha_char != 'X'){
-    cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
-    cout << "---------------------DIGITE X X PARA FECHAR --------------------" << endl;
-    gerar_tabuleiro_ataque();
-    imprimir_tabuleiros();
-    seu_ataque();
-    cout << "------------------------------------------------------------------------------------" << endl;
 }
+
+void escolher_posicoes_inimigo(){
+    for(int j = 0; j < 3; j++){ //Como o comprimento dos vetores navios e comprimento são iguais, usa 3 como numero de repetição!
+        while(navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
+            posicao_valida = true; //precisa disso senao o codigo não funciona, sla nao sei explicar direito
+            direcao = rand() % 2; //escolhe se o navio vai ser vertical ou horizontal
+            if (direcao == 0){ //Se Verical
+                linha = rand()% (tamanho_tabuleiro - comprimento[j] + 1); //escolhe a linha do navio
+                coluna = rand()% tamanho_tabuleiro; //escolhe a coluna do navio
+                for(int k = 0; k < comprimento[j]; k++){ 
+                    if(tabuleiro_nosso[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                        posicao_valida = false; //se já tiver algo, não coloca nada
+                    }
+                }
+                if(posicao_valida == true){
+                    for(int k = 0; k < comprimento[j]; k++){
+                        tabuleiro_nosso[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
+                    }
+                    navios[j]--; //prossegue no ciclo while
+                }
+            }
+            else{ // Se Horizontal
+                linha = rand()% tamanho_tabuleiro; //escolhe a linha do navio
+                coluna = rand() % (tamanho_tabuleiro - comprimento[j] + 1);  //escolhe a coluna do navio
+                for(int k = 0; k < comprimento[j]; k++){
+                    if(tabuleiro_nosso[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                        posicao_valida = false;
+                    }
+                }
+                if(posicao_valida == true){
+                    for(int k = 0; k < comprimento[j]; k++){
+                        tabuleiro_nosso[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
+                    }
+                    navios[j]--; //prossegue no ciclo while
+                }
+            }
+        }
+    }
+}
+
+int main(){
+    srand(time(NULL));
+    while(numero_navios < 1 || numero_navios > 5){
+        cout << "Insira o numero de navios (max 5): ";
+        cin >> numero_navios;
+    }
+
+    while(tamanho_tabuleiro < 6 || tamanho_tabuleiro > 10){
+        cout << "Insira o tamanho do tabuleiro (min 6 e max 10): ";
+        cin >> tamanho_tabuleiro;
+    }
+
+    tipos_de_navio();
+
+    gerar_tabuleiro();
+    
+    gerar_tabuleiro_ataque();
+    
+    escolher_posicoes_nosso();
+
+    escolher_posicoes_inimigo();
+
+    while (ataque_linha_char != 'X'){
+        cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
+        cout << "---------------------DIGITE X X PARA FECHAR --------------------" << endl;
+        imprimir_tabuleiros();
+        seu_ataque();
+        cout << "------------------------------------------------------------------------------------" << endl;
+    }
 }
