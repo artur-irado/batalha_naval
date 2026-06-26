@@ -18,6 +18,7 @@ char alfabeto[10] = {'A','B','C','D','E','F','G','H','I','J'};
 char ataque_linha_char; //coordenada que voce insire pra atacar (linha, a..b...c) em forma de char
 char char_do_navio[3] = {'D', 'C', 'P'};
 char tabuleiro_ataque[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
+char tabuleiro_inimigo[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
 char tabuleiro_nosso[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'}; // tabuleiro char, '~' representa as ondinhas
 bool posicao_valida = true; //variavel pra reinicar o ciclo de posicionamento de navios se a posiçao não for válida
 string nome_do_navio[3] = {"Destroier", "Cruzador", "Porta-Aviao"};
@@ -32,7 +33,14 @@ void gerar_tabuleiro(){
 
 }
 
-
+void gerar_tabuleiro_inimigo(){
+    cout << endl;
+    for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
+    for (int j=0; j < tamanho_tabuleiro; j++){
+        tabuleiro_inimigo[i][j] = '~';
+        }
+    }
+}
 
 void gerar_tabuleiro_ataque(){
     cout << endl;
@@ -75,8 +83,20 @@ void imprimir_tabuleiros(){
 
 void seu_ataque(){
     ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
-    tabuleiro_ataque[ataque_linha][ataque_coluna] = 'X';
-
+    switch (tabuleiro_inimigo[ataque_linha][ataque_coluna]){
+        case '~':
+            tabuleiro_ataque[ataque_linha][ataque_coluna] = 'X';
+            break;
+        case 'D':
+            tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
+            break;
+        case 'P':
+            tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
+            break;
+        case 'C':
+            tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
+            break;
+    }
 }
 
 void tipos_de_navio(){
@@ -149,13 +169,13 @@ void escolher_posicoes_inimigo(){
                 linha = rand()% (tamanho_tabuleiro - comprimento[j] + 1); //escolhe a linha do navio
                 coluna = rand()% tamanho_tabuleiro; //escolhe a coluna do navio
                 for(int k = 0; k < comprimento[j]; k++){ 
-                    if(tabuleiro_nosso[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                    if(tabuleiro_inimigo[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
                         posicao_valida = false; //se já tiver algo, não coloca nada
                     }
                 }
                 if(posicao_valida == true){
                     for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro_nosso[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
+                        tabuleiro_inimigo[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
                     }
                     navios[j]--; //prossegue no ciclo while
                 }
@@ -164,13 +184,13 @@ void escolher_posicoes_inimigo(){
                 linha = rand()% tamanho_tabuleiro; //escolhe a linha do navio
                 coluna = rand() % (tamanho_tabuleiro - comprimento[j] + 1);  //escolhe a coluna do navio
                 for(int k = 0; k < comprimento[j]; k++){
-                    if(tabuleiro_nosso[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                    if(tabuleiro_inimigo[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
                         posicao_valida = false;
                     }
                 }
                 if(posicao_valida == true){
                     for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro_nosso[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
+                        tabuleiro_inimigo[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
                     }
                     navios[j]--; //prossegue no ciclo while
                 }
@@ -185,7 +205,7 @@ int main(){
         cout << "Insira o numero de navios (max 5): ";
         cin >> numero_navios;
     }
-
+    
     while(tamanho_tabuleiro < 6 || tamanho_tabuleiro > 10){
         cout << "Insira o tamanho do tabuleiro (min 6 e max 10): ";
         cin >> tamanho_tabuleiro;
@@ -194,10 +214,14 @@ int main(){
     tipos_de_navio();
 
     gerar_tabuleiro();
+
+    gerar_tabuleiro_inimigo();
     
     gerar_tabuleiro_ataque();
     
     escolher_posicoes_nosso();
+
+    tipos_de_navio();
 
     escolher_posicoes_inimigo();
 
