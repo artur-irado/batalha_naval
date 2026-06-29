@@ -20,7 +20,9 @@ char char_do_navio[3] = {'D', 'C', 'P'};
 char tabuleiro_ataque[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
 char tabuleiro_inimigo[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
 char tabuleiro_nosso[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'}; // tabuleiro char, '~' representa as ondinhas
+bool jogar_novamente = false; //condição pra voce jogar duas vezes seguidas
 bool posicao_valida = true; //variavel pra reinicar o ciclo de posicionamento de navios se a posiçao não for válida
+bool fim_de_jogo = false;
 string nome_do_navio[3] = {"Destroier (amarelo)", "Cruzador (verde)", "Porta-Aviao (vermelho)"};
 
 void gerar_tabuleiro(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO]){
@@ -86,25 +88,21 @@ void imprimir_tabuleiros(){
         }
         cout << endl;
     }
-    cout << endl << "Digite as cordenadas de ataque: ";
-    cin >> ataque_linha_char >> ataque_coluna;
 }
 
-void seu_ataque(){
-    ataque_linha_char = toupper(ataque_linha_char); //correção para aceitar maiusculo e minusculo
-    ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
-    switch (tabuleiro_inimigo[ataque_linha][ataque_coluna]){
+void ataque(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], string dono){
+    if (dono == "INIMIGO"){
+        ataque_linha = rand()% tamanho_tabuleiro;
+        ataque_coluna = rand()% tamanho_tabuleiro;
+    }
+    switch (tabuleiro[ataque_linha][ataque_coluna]){
         case '~':
-            tabuleiro_ataque[ataque_linha][ataque_coluna] = 'X';
+            tabuleiro[ataque_linha][ataque_coluna] = 'X';
+            jogar_novamente = false;
             break;
-        case 'D':
-            tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
-            break;
-        case 'P':
-            tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
-            break;
-        case 'C':
-            tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
+        default:
+            tabuleiro[ataque_linha][ataque_coluna] = '#';
+            jogar_novamente = true;
             break;
     }
 }
@@ -172,6 +170,24 @@ void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[
     }
 }
 
+void condicao_ataque(){
+    while(jogar_novamente){
+        imprimir_tabuleiros();
+        cout << endl << "Digite as cordenadas de ataque: ";
+        cin >> ataque_linha_char >> ataque_coluna;
+        ataque(tabuleiro_ataque, "JOGADOR");
+    }
+}
+
+void inimigo_jogar_novamente(){
+    while(jogar_novamente){
+        imprimir_tabuleiros();
+        ataque_linha = rand()% tamanho_tabuleiro;
+        ataque_coluna = rand()% tamanho_tabuleiro;
+        ataque(tabuleiro_nosso, "INIMIGO");
+    }
+}
+
 int main(){
     srand(time(NULL));
     while(numero_navios < 1 || numero_navios > 5){
@@ -198,11 +214,22 @@ int main(){
 
     escolher_posicoes(tabuleiro_inimigo, navios_inimigos);
 
-    while (ataque_linha_char != 'X'){
+    while(!(fim_de_jogo)){
         cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
-        cout << "---------------------DIGITE X X PARA FECHAR --------------------" << endl;
+        cout << "---------------------DIGITE X PARA FECHAR --------------------" << endl;
         imprimir_tabuleiros();
-        seu_ataque();
+        cout << endl << "Digite as cordenadas de ataque: ";
+        cin >> ataque_linha_char;
+        ataque_linha_char = toupper(ataque_linha_char); //correção para aceitar maiusculo e minusculo
+        if (ataque_linha_char == 'X'){
+            break;
+        }
+        ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
+        cin >> ataque_coluna;
+        ataque(tabuleiro_ataque, "JOGADOR");
+        condicao_ataque();
+        ataque(tabuleiro_nosso, "INIMIGO");
+        inimigo_jogar_novamente();
         cout << "------------------------------------------------------------------------------------" << endl;
     }
 }
