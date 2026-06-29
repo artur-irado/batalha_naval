@@ -90,23 +90,6 @@ void imprimir_tabuleiros(){
     }
 }
 
-void ataque(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], string dono){
-    if (dono == "INIMIGO"){
-        ataque_linha = rand()% tamanho_tabuleiro;
-        ataque_coluna = rand()% tamanho_tabuleiro;
-    }
-    switch (tabuleiro[ataque_linha][ataque_coluna]){
-        case '~':
-            tabuleiro[ataque_linha][ataque_coluna] = 'X';
-            jogar_novamente = false;
-            break;
-        default:
-            tabuleiro[ataque_linha][ataque_coluna] = '#';
-            jogar_novamente = true;
-            break;
-    }
-}
-
 void tipos_de_navio(int navios[3], string dono){
     for(int i=0; i<numero_navios; i++){
         tipo = rand()% 3; // variavel tipo para gerar o número aleatorio usado no switch
@@ -170,21 +153,32 @@ void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[
     }
 }
 
-void condicao_ataque(){
-    while(jogar_novamente){
-        imprimir_tabuleiros();
-        cout << endl << "Digite as cordenadas de ataque: ";
-        cin >> ataque_linha_char >> ataque_coluna;
-        ataque(tabuleiro_ataque, "JOGADOR");
+
+void ataque(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], string dono){
+    if (dono == "INIMIGO"){
+        ataque_linha = rand()% tamanho_tabuleiro;
+        ataque_coluna = rand()% tamanho_tabuleiro;
+    }
+    switch (tabuleiro[ataque_linha][ataque_coluna]){
+        case '~':
+            tabuleiro[ataque_linha][ataque_coluna] = 'X';
+            jogar_novamente = false;
+            break;
+        default:
+            tabuleiro[ataque_linha][ataque_coluna] = '#';
+            jogar_novamente = true;
+            break;
     }
 }
 
-void inimigo_jogar_novamente(){
+void condicao_ataque(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], string vez){
     while(jogar_novamente){
         imprimir_tabuleiros();
-        ataque_linha = rand()% tamanho_tabuleiro;
-        ataque_coluna = rand()% tamanho_tabuleiro;
-        ataque(tabuleiro_nosso, "INIMIGO");
+        if(vez == "JOGADOR"){
+            cout << endl << "Digite as cordenadas de ataque: ";
+            cin >> ataque_linha_char >> ataque_coluna;
+        }
+        ataque(tabuleiro, vez);
     }
 }
 
@@ -227,9 +221,9 @@ int main(){
         ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
         cin >> ataque_coluna;
         ataque(tabuleiro_ataque, "JOGADOR");
-        condicao_ataque();
+        condicao_ataque(tabuleiro_ataque, "JOGADOR");
         ataque(tabuleiro_nosso, "INIMIGO");
-        inimigo_jogar_novamente();
+        condicao_ataque(tabuleiro_nosso, "INIMIGO");
         cout << "------------------------------------------------------------------------------------" << endl;
     }
 }
