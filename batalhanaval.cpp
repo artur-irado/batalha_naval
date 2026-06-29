@@ -165,6 +165,12 @@ void ataque(string atacante){
                 tabuleiro_nosso[ataque_linha][ataque_coluna] = 'X';
                 jogar_novamente = false;
                 break;
+            case 'X':
+                jogar_novamente = false;
+                break;
+            case '#':
+                jogar_novamente = false;
+                break;
             default:
                 tabuleiro_nosso[ataque_linha][ataque_coluna] = '#';
                 jogar_novamente = true;
@@ -172,30 +178,57 @@ void ataque(string atacante){
         }
     }
     else{
-        switch (tabuleiro_inimigo[ataque_linha][ataque_coluna]){
-            case '~':
-                tabuleiro_ataque[ataque_linha][ataque_coluna] = 'X';
-                jogar_novamente = false;
+        if(tabuleiro_ataque[ataque_linha][ataque_coluna] != '~'){
+            cout << "Voce ja atacou nessa coordenada!, perdeu a vez!";
+        }
+        else{
+            switch (tabuleiro_inimigo[ataque_linha][ataque_coluna]){
+                case '~':
+                    tabuleiro_ataque[ataque_linha][ataque_coluna] = 'X';
+                    tabuleiro_inimigo[ataque_linha][ataque_coluna] = 'X';
+                    jogar_novamente = false;
+                    break;
+                case 'X':
+                    jogar_novamente = false;
+                    break;
+                case '#':
+                    jogar_novamente = false;
+                    break;
+                default:
+                    tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
+                    tabuleiro_inimigo[ataque_linha][ataque_coluna] = '#';
+                    jogar_novamente = true;
                 break;
-            default:
-                tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
-                jogar_novamente = true;
-                break;
+            }
         }
     }
     cout << endl << atacante << " atacou nas posicoes: " << alfabeto[ataque_linha] << " " << ataque_coluna << endl; 
 }
 
-void condicao_ataque(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], string vez){
-    while(jogar_novamente){
+void condicao_ataque(string vez){
+    while(jogar_novamente){ //verifica se é possivel algum dos jogadores jogar de novo
         imprimir_tabuleiros();
         if(vez == "JOGADOR"){
             cout << endl << "Digite as cordenadas de ataque: ";
-            cin >> ataque_linha_char >> ataque_coluna;
+            cin >> ataque_linha_char;
+            ataque_linha_char = toupper(ataque_linha_char);
+            if (ataque_linha_char == 'X'){
+                fim_de_jogo = true;
+                break;
+            }
+            ataque_linha = ataque_linha_char - 65;
+            cin >> ataque_coluna;
+        }
+        else{
+            do{
+                ataque_linha = rand() % tamanho_tabuleiro;
+                ataque_coluna = rand() % tamanho_tabuleiro;
+            }while(tabuleiro_nosso[ataque_linha][ataque_coluna] == 'X' || tabuleiro_nosso[ataque_linha][ataque_coluna] == '#');
         }
         ataque(vez);
     }
 }
+
 
 int main(){
     srand(time(NULL));
@@ -236,9 +269,12 @@ int main(){
         ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
         cin >> ataque_coluna;
         ataque("JOGADOR");
-        condicao_ataque(tabuleiro_ataque, "JOGADOR");
+        condicao_ataque("JOGADOR");
+        if (fim_de_jogo){
+            break;
+        }
         cout << "------------------------------------------------------------------------------------" << endl;
         ataque("INIMIGO");
-        condicao_ataque(tabuleiro_nosso, "INIMIGO");
+        condicao_ataque("INIMIGO");
     }
 }
