@@ -6,7 +6,7 @@ using namespace std;
 //Variaveis Globais
 
 const int MAX_TABULEIRO = 10;
-int navios[3] = {0}; //3 tipos de navios, cada posição armazena o numero de navios de cada tipo
+int navios_nossos[3] = {0}, navios_inimigos[3] = {0}; //3 tipos de navios, cada posição armazena o numero de navios de cada tipo
 int ataque_linha; //coordenada que voce insire pra atacar (linha, a..b...c) em forma de inteiro
 int ataque_coluna; //coordenada que voce insire atacar (coluna)
 int comprimento[3] = {2,3,4}; // diferentes comprimentos armazenados
@@ -21,35 +21,42 @@ char tabuleiro_ataque[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
 char tabuleiro_inimigo[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'};
 char tabuleiro_nosso[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'}; // tabuleiro char, '~' representa as ondinhas
 bool posicao_valida = true; //variavel pra reinicar o ciclo de posicionamento de navios se a posiçao não for válida
-string nome_do_navio[3] = {"Destroier", "Cruzador", "Porta-Aviao"};
+string nome_do_navio[3] = {"Destroier (amarelo)", "Cruzador (verde)", "Porta-Aviao (vermelho)"};
 
-void gerar_tabuleiro(){
+void gerar_tabuleiro(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO]){
     cout << endl;
     for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
         for (int j=0; j < tamanho_tabuleiro; j++){
-            tabuleiro_nosso[i][j] = '~';
+            tabuleiro[i][j] = '~';
         }
     }
 
 }
 
-void gerar_tabuleiro_inimigo(){
-    cout << endl;
-    for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
-    for (int j=0; j < tamanho_tabuleiro; j++){
-        tabuleiro_inimigo[i][j] = '~';
-        }
+void imprimir_colorido(char saida){ //imprime a saida colorida
+    switch(saida){
+        case '~':
+            cout << "\033[34m" << saida << "\033[0m";
+            break;
+        case 'D':
+            cout << "\033[33m" << saida << "\033[0m";
+            break;
+        case 'C':
+            cout << "\033[32m" << saida << "\033[0m";
+            break;  
+        case 'P':
+            cout << "\033[31m" << saida << "\033[0m";
+            break;
+        case 'X':
+            cout << "\033[37m" << saida << "\033[0m";
+            break;
+        case '#':
+            cout << "\033[38;2;255;165;0m" << saida << "\033[0m";
+            break;
+        default:
+            cout << "\033[0m" << saida << "\033[0m";
+            break;
     }
-}
-
-void gerar_tabuleiro_ataque(){
-    cout << endl;
-    for(int i=0; i < tamanho_tabuleiro; i++){   // Gera a Matriz do tabuleiro
-    for (int j=0; j < tamanho_tabuleiro; j++){
-        tabuleiro_ataque[i][j] = '~';
-        }
-    }
-
 }
 
 void imprimir_tabuleiros(){
@@ -68,12 +75,14 @@ void imprimir_tabuleiros(){
     for(int i = 0; i < tamanho_tabuleiro; i++){   // Imprime a Matriz do tabuleiro
         cout << alfabeto[i] << " "; //imprime as letras do lado do tabuleiro
         for (int j=0; j < tamanho_tabuleiro; j++){
-            cout << tabuleiro_nosso[i][j] << " ";
+            imprimir_colorido(tabuleiro_nosso[i][j]); //chama a função que vai colorir
+            cout << " ";
         }
         cout << "\t\t"; 
         cout << alfabeto[i] << " "; //imprime as letras do lado do tabuleiro
         for (int j=0; j < tamanho_tabuleiro; j++){
-            cout << tabuleiro_ataque[i][j] << " ";
+            imprimir_colorido(tabuleiro_ataque[i][j]); //chama a função que vai colorir
+            cout << " ";
         }
         cout << endl;
     }
@@ -82,6 +91,7 @@ void imprimir_tabuleiros(){
 }
 
 void seu_ataque(){
+    ataque_linha_char = toupper(ataque_linha_char); //correção para aceitar maiusculo e minusculo
     ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
     switch (tabuleiro_inimigo[ataque_linha][ataque_coluna]){
         case '~':
@@ -99,100 +109,63 @@ void seu_ataque(){
     }
 }
 
-void tipos_de_navio(){
+void tipos_de_navio(int navios[3], string dono){
     for(int i=0; i<numero_navios; i++){
         tipo = rand()% 3; // variavel tipo para gerar o número aleatorio usado no switch
         switch(tipo) {
             case 0:
-                navios[0]++;
-                break;
+            navios[0]++;
+            break;
             case 1:
-                navios[1]++;
-                break;
+            navios[1]++;
+            break;
             case 2:
-                navios[2]++;
-                break;
+            navios[2]++;
+            break;
         }
     }
     
+    cout << "Frota de " << dono << endl;
     for (int i=0; i < 3; i++){
         cout << navios[i] << " navios do tipo " << nome_do_navio[i] << endl; //informa quantos navios existem de cada tipo
     }
-
+    
 }
 
-void escolher_posicoes_nosso(){
+void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[3]){
+    int copia_navios[3] = {navios[0], navios[1], navios[2]}; //temos que criar uma copia do vetor pois será utlizado para tanto nós quanto para o inimigo e usamos navios[3]--
     for(int j = 0; j < 3; j++){ //Como o comprimento dos vetores navios e comprimento são iguais, usa 3 como numero de repetição!
-        while(navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
+        while(copia_navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
             posicao_valida = true; //precisa disso senao o codigo não funciona, sla nao sei explicar direito
             direcao = rand() % 2; //escolhe se o navio vai ser vertical ou horizontal
             if (direcao == 0){ //Se Verical
                 linha = rand()% (tamanho_tabuleiro - comprimento[j] + 1); //escolhe a linha do navio
                 coluna = rand()% tamanho_tabuleiro; //escolhe a coluna do navio
                 for(int k = 0; k < comprimento[j]; k++){ 
-                    if(tabuleiro_nosso[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                    if(tabuleiro[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
                         posicao_valida = false; //se já tiver algo, não coloca nada
                     }
                 }
                 if(posicao_valida == true){
                     for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro_nosso[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
+                        tabuleiro[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
                     }
-                    navios[j]--; //prossegue no ciclo while
+                    copia_navios[j]--; //prossegue no ciclo while
                 }
             }
             else{ // Se Horizontal
                 linha = rand()% tamanho_tabuleiro; //escolhe a linha do navio
                 coluna = rand() % (tamanho_tabuleiro - comprimento[j] + 1);  //escolhe a coluna do navio
                 for(int k = 0; k < comprimento[j]; k++){
-                    if(tabuleiro_nosso[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
+                    if(tabuleiro[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
                         posicao_valida = false;
                     }
                 }
                 if(posicao_valida == true){
                     for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro_nosso[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
+                        tabuleiro[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
                     }
-                    navios[j]--; //prossegue no ciclo while
-                }
-            }
-        }
-    }
-}
-
-void escolher_posicoes_inimigo(){
-    for(int j = 0; j < 3; j++){ //Como o comprimento dos vetores navios e comprimento são iguais, usa 3 como numero de repetição!
-        while(navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
-            posicao_valida = true; //precisa disso senao o codigo não funciona, sla nao sei explicar direito
-            direcao = rand() % 2; //escolhe se o navio vai ser vertical ou horizontal
-            if (direcao == 0){ //Se Verical
-                linha = rand()% (tamanho_tabuleiro - comprimento[j] + 1); //escolhe a linha do navio
-                coluna = rand()% tamanho_tabuleiro; //escolhe a coluna do navio
-                for(int k = 0; k < comprimento[j]; k++){ 
-                    if(tabuleiro_inimigo[linha + k][coluna] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
-                        posicao_valida = false; //se já tiver algo, não coloca nada
-                    }
-                }
-                if(posicao_valida == true){
-                    for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro_inimigo[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
-                    }
-                    navios[j]--; //prossegue no ciclo while
-                }
-            }
-            else{ // Se Horizontal
-                linha = rand()% tamanho_tabuleiro; //escolhe a linha do navio
-                coluna = rand() % (tamanho_tabuleiro - comprimento[j] + 1);  //escolhe a coluna do navio
-                for(int k = 0; k < comprimento[j]; k++){
-                    if(tabuleiro_inimigo[linha][coluna + k] != '~'){ //verifica FINALMENTE se tem alguma coisa na posição
-                        posicao_valida = false;
-                    }
-                }
-                if(posicao_valida == true){
-                    for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro_inimigo[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
-                    }
-                    navios[j]--; //prossegue no ciclo while
+                    copia_navios[j]--; //prossegue no ciclo while
                 }
             }
         }
@@ -211,19 +184,19 @@ int main(){
         cin >> tamanho_tabuleiro;
     }
 
-    tipos_de_navio();
+    tipos_de_navio(navios_nossos, "JOGADOR");
 
-    gerar_tabuleiro();
+    gerar_tabuleiro(tabuleiro_nosso);
 
-    gerar_tabuleiro_inimigo();
+    gerar_tabuleiro(tabuleiro_inimigo);
     
-    gerar_tabuleiro_ataque();
+    gerar_tabuleiro(tabuleiro_ataque);
     
-    escolher_posicoes_nosso();
+    escolher_posicoes(tabuleiro_nosso, navios_nossos);
 
-    tipos_de_navio();
+    tipos_de_navio(navios_inimigos, "INIMIGO");
 
-    escolher_posicoes_inimigo();
+    escolher_posicoes(tabuleiro_inimigo, navios_inimigos);
 
     while (ataque_linha_char != 'X'){
         cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
