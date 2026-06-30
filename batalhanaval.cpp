@@ -13,7 +13,10 @@ int comprimento[3] = {2,3,4}; // diferentes comprimentos armazenados
 int direcao; //variavel 1 para horizontal e 0 para vertical 
 int linha, coluna; //variaveis para determinar a linha e coluna em que o navio gerado aleatoriamente vai ser posicionado
 int numero_navios = 0, tipo, contagem;
+int rodada = 1;
 int tamanho_tabuleiro = 1;
+float pontuacao_voce = 0;
+float pontuacao_inimigo = 0;
 char alfabeto[10] = {'A','B','C','D','E','F','G','H','I','J'};
 char ataque_linha_char; //coordenada que voce insire pra atacar (linha, a..b...c) em forma de char
 char char_do_navio[3] = {'D', 'C', 'P'};
@@ -34,6 +37,16 @@ void gerar_tabuleiro(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO]){
     }
 
 }
+
+
+void calcular_pontuacao(string pontuante){ 
+    if (pontuante == "voce"){
+        pontuacao_voce += 10*(0.9*rodada);
+    } else{
+        pontuacao_inimigo += 10*(0.9*rodada);
+    }
+}
+
 
 void imprimir_colorido(char saida){ //imprime a saida colorida
     switch(saida){
@@ -174,6 +187,7 @@ void ataque(string atacante){
             default:
                 tabuleiro_nosso[ataque_linha][ataque_coluna] = '#';
                 jogar_novamente = true;
+                calcular_pontuacao("inimigo");
                 break;
         }
     }
@@ -197,6 +211,7 @@ void ataque(string atacante){
                 default:
                     tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
                     tabuleiro_inimigo[ataque_linha][ataque_coluna] = '#';
+                    calcular_pontuacao("voce");
                     jogar_novamente = true;
                 break;
             }
@@ -229,7 +244,6 @@ void condicao_ataque(string vez){
     }
 }
 
-
 int main(){
     srand(time(NULL));
     while(numero_navios < 1 || numero_navios > 5){
@@ -260,6 +274,7 @@ int main(){
         cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
         cout << "---------------------DIGITE X PARA FECHAR --------------------" << endl;
         imprimir_tabuleiros();
+        cout << endl << "Numero da Rodada: " << rodada << endl;
         cout << endl << "Digite as cordenadas de ataque: ";
         cin >> ataque_linha_char;
         ataque_linha_char = toupper(ataque_linha_char); //correção para aceitar maiusculo e minusculo
@@ -270,11 +285,14 @@ int main(){
         cin >> ataque_coluna;
         ataque("JOGADOR");
         condicao_ataque("JOGADOR");
+        cout << "sua pontuacao: " << pontuacao_voce << endl;
         if (fim_de_jogo){
             break;
         }
         cout << "------------------------------------------------------------------------------------" << endl;
         ataque("INIMIGO");
         condicao_ataque("INIMIGO");
+        cout << "pontuacao do inimigo: " << pontuacao_inimigo << endl;
+        rodada++;
     }
 }
