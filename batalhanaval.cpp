@@ -14,6 +14,8 @@ int direcao; //variavel 1 para horizontal e 0 para vertical
 int linha, coluna; //variaveis para determinar a linha e coluna em que o navio gerado aleatoriamente vai ser posicionado
 int numero_navios = 0, tipo, contagem;
 int rodada = 1;
+int pedacos_de_navios_nossos = 0;
+int pedacos_de_navios_inimigos = 0;
 int tamanho_tabuleiro = 1;
 float pontuacao_voce = 0;
 float pontuacao_inimigo = 0;
@@ -26,7 +28,10 @@ char tabuleiro_nosso[MAX_TABULEIRO][MAX_TABULEIRO] = {'~'}; // tabuleiro char, '
 bool jogar_novamente = false; //condição pra voce jogar duas vezes seguidas
 bool posicao_valida = true; //variavel pra reinicar o ciclo de posicionamento de navios se a posiçao não for válida
 bool fim_de_jogo = false;
+bool ausencia_de_navios = false;
+bool alguem_ganhou = false;
 string nome_do_navio[3] = {"Destroier (amarelo)", "Cruzador (verde)", "Porta-Aviao (vermelho)"};
+string vencedor;
 
 void gerar_tabuleiro(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO]){
     cout << endl;
@@ -38,12 +43,11 @@ void gerar_tabuleiro(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO]){
 
 }
 
-
 void calcular_pontuacao(string pontuante){ 
     if (pontuante == "voce"){
-        pontuacao_voce += 10*(0.9*rodada);
+        pontuacao_voce += 10*(rodada/0.9);
     } else{
-        pontuacao_inimigo += 10*(0.9*rodada);
+        pontuacao_inimigo += 10*(rodada/0.9);
     }
 }
 
@@ -97,7 +101,7 @@ void imprimir_tabuleiros(){
         cout << alfabeto[i] << " "; //imprime as letras do lado do tabuleiro
         for (int j=0; j < tamanho_tabuleiro; j++){
             imprimir_colorido(tabuleiro_ataque[i][j]); //chama a função que vai colorir
-            cout << " ";
+            cout << " "; 
         }
         cout << endl;
     }
@@ -126,7 +130,29 @@ void tipos_de_navio(int navios[3], string dono){
     
 }
 
-void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[3]){
+void verificar_tabuleiro(){
+    if(pedacos_de_navios_inimigos == 0){
+        vencedor = "JOGADOR";
+        fim_de_jogo = true;
+        alguem_ganhou = true;
+    }
+    if (pedacos_de_navios_nossos == 0){
+        vencedor = "INIMIGO";
+        fim_de_jogo = true;
+        alguem_ganhou = true;
+    }
+}
+
+void contar_partes_de_navio (string dono_do_tabuleiro){
+    if (dono_do_tabuleiro == "INIMIGO"){
+        pedacos_de_navios_inimigos++;
+    }
+    else {
+        pedacos_de_navios_nossos++;
+    }
+}
+
+void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[3], string dono_do_tabuleiro){
     int copia_navios[3] = {navios[0], navios[1], navios[2]}; //temos que criar uma copia do vetor pois será utlizado para tanto nós quanto para o inimigo e usamos navios[3]--
     for(int j = 0; j < 3; j++){ //Como o comprimento dos vetores navios e comprimento são iguais, usa 3 como numero de repetição!
         while(copia_navios[j] > 0){ //o codigo é feito para cada navio de cada tipo do vetor navios
@@ -142,7 +168,8 @@ void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[
                 }
                 if(posicao_valida == true){
                     for(int k = 0; k < comprimento[j]; k++){
-                        tabuleiro[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço
+                        contar_partes_de_navio(dono_do_tabuleiro);
+                        tabuleiro[linha + k][coluna] = char_do_navio[j]; //a linha se altera pois o navio é na vertical, preenche o espaço 
                     }
                     copia_navios[j]--; //prossegue no ciclo while
                 }
@@ -157,6 +184,7 @@ void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[
                 }
                 if(posicao_valida == true){
                     for(int k = 0; k < comprimento[j]; k++){
+                        contar_partes_de_navio(dono_do_tabuleiro);
                         tabuleiro[linha][coluna + k] = char_do_navio[j]; //a coluna se altera pois o navio é na v horizontal, preenche o espaço
                     }
                     copia_navios[j]--; //prossegue no ciclo while
@@ -165,7 +193,6 @@ void escolher_posicoes(char tabuleiro[MAX_TABULEIRO][MAX_TABULEIRO], int navios[
         }
     }
 }
-
 
 void ataque(string atacante){
     if (atacante == "INIMIGO"){
@@ -187,6 +214,7 @@ void ataque(string atacante){
             default:
                 tabuleiro_nosso[ataque_linha][ataque_coluna] = '#';
                 jogar_novamente = true;
+                pedacos_de_navios_nossos--;
                 calcular_pontuacao("inimigo");
                 break;
         }
@@ -212,6 +240,7 @@ void ataque(string atacante){
                     tabuleiro_ataque[ataque_linha][ataque_coluna] = '#';
                     tabuleiro_inimigo[ataque_linha][ataque_coluna] = '#';
                     calcular_pontuacao("voce");
+                    pedacos_de_navios_inimigos--;
                     jogar_novamente = true;
                 break;
             }
@@ -221,7 +250,7 @@ void ataque(string atacante){
 }
 
 void condicao_ataque(string vez){
-    while(jogar_novamente){ //verifica se é possivel algum dos jogadores jogar de novo
+    while(jogar_novamente && fim_de_jogo == false){ //verifica se é possivel algum dos jogadores jogar de novo
         imprimir_tabuleiros();
         if(vez == "JOGADOR"){
             cout << endl << "Digite as cordenadas de ataque: ";
@@ -241,11 +270,11 @@ void condicao_ataque(string vez){
             }while(tabuleiro_nosso[ataque_linha][ataque_coluna] == 'X' || tabuleiro_nosso[ataque_linha][ataque_coluna] == '#');
         }
         ataque(vez);
+        verificar_tabuleiro();
     }
 }
 
-int main(){
-    srand(time(NULL));
+void inputs(){
     while(numero_navios < 1 || numero_navios > 5){
         cout << "Insira o numero de navios (max 5): ";
         cin >> numero_navios;
@@ -256,6 +285,27 @@ int main(){
         cin >> tamanho_tabuleiro;
     }
 
+}
+
+void pos_vitoria(){
+    char permissao;
+    if(alguem_ganhou == true){
+    cout << endl << "========================================" << endl;
+    cout << "           TABULEIRO FINAL             " << endl;
+    cout << "========================================" << endl;
+    
+    imprimir_tabuleiros(); 
+
+    cout << endl << "========================================" << endl;
+    cout << "FIM DE JOGO! O VENCEDOR FOI O: " << vencedor << endl;
+    cout << "========================================" << endl;
+
+    cout << "Sua Pontuacao: " << pontuacao_voce << endl;
+    cout << "Pontuacao do Inimigo: " << pontuacao_inimigo << endl; 
+    }
+}
+
+void gameplay(){
     tipos_de_navio(navios_nossos, "JOGADOR");
 
     gerar_tabuleiro(tabuleiro_nosso);
@@ -264,13 +314,13 @@ int main(){
     
     gerar_tabuleiro(tabuleiro_ataque);
     
-    escolher_posicoes(tabuleiro_nosso, navios_nossos);
+    escolher_posicoes(tabuleiro_nosso, navios_nossos, "JOGADOR");
 
     tipos_de_navio(navios_inimigos, "INIMIGO");
 
-    escolher_posicoes(tabuleiro_inimigo, navios_inimigos);
+    escolher_posicoes(tabuleiro_inimigo, navios_inimigos, "INIMIGO");
 
-    while(!(fim_de_jogo)){
+    while(fim_de_jogo == false){
         cout << endl << "-------------FACA SEU ATAQUE-----------------------------" << endl;
         cout << "---------------------DIGITE X PARA FECHAR --------------------" << endl;
         imprimir_tabuleiros();
@@ -284,15 +334,30 @@ int main(){
         ataque_linha = ataque_linha_char - 65; //converte a coordenada da linah em forma de letra pra numero inteiro
         cin >> ataque_coluna;
         ataque("JOGADOR");
+        verificar_tabuleiro();
         condicao_ataque("JOGADOR");
-        cout << "sua pontuacao: " << pontuacao_voce << endl;
         if (fim_de_jogo){
             break;
         }
         cout << "------------------------------------------------------------------------------------" << endl;
         ataque("INIMIGO");
+        verificar_tabuleiro();
         condicao_ataque("INIMIGO");
+        verificar_tabuleiro();
+        cout << "sua pontuacao: " << pontuacao_voce << endl;
         cout << "pontuacao do inimigo: " << pontuacao_inimigo << endl;
+        if (fim_de_jogo){
+            break;
+        }
         rodada++;
     }
+    pos_vitoria();
+}
+
+int main(){
+    srand(time(NULL));
+
+    inputs();
+
+    gameplay();
 }
